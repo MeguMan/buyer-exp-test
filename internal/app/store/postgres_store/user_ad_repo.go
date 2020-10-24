@@ -4,7 +4,7 @@ type UserAdRepository struct {
 	store *Store
 }
 
-func(r *UserAdRepository) Create(userId, adId int) error {
+func (r *UserAdRepository) Create(userId, adId int) error {
 	//Need to validate
 	var existing int
 	err := r.store.db.QueryRow(
@@ -21,4 +21,3 @@ func(r *UserAdRepository) Create(userId, adId int) error {
 
 	return err
 }
-

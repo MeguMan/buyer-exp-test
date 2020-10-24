@@ -6,13 +6,14 @@ import (
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
 	"github.com/MeguMan/buyer-exp-test/internal/app/store"
 	"github.com/gorilla/mux"
+	"github.com/robfig/cron"
 	"log"
 	"net/http"
 )
 
 type Data struct {
 	Email string
-	Link string
+	Link  string
 }
 
 type server struct {
@@ -31,6 +32,9 @@ func NewServer(store store.Store) *server {
 	}
 	s.configureRouter()
 
+	c := cron.New()
+	c.AddFunc("* * * * * *", s.store.Ad().CheckPrice)
+	c.Start()
 	return s
 }
 
@@ -38,8 +42,8 @@ func (s *server) configureRouter() {
 	s.router.HandleFunc("/follow", s.follow()).Methods("POST")
 }
 
-func (s *server) follow() func (w http.ResponseWriter, r *http.Request) {
-	return func (w http.ResponseWriter, r *http.Request) {
+func (s *server) follow() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		d := Data{}
 		u := model.User{}
 		ad := model.Ad{}
@@ -53,9 +57,6 @@ func (s *server) follow() func (w http.ResponseWriter, r *http.Request) {
 
 		u.Email = d.Email
 		ad.Link = d.Link
-		ad.Price = 123 //Need price parsing
-
-		ad.CheckPrice()
 
 		ur := s.store.User()
 		adr := s.store.Ad()
@@ -80,6 +81,7 @@ func (s *server) follow() func (w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		u.SendEmail(&ad)
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprint(w, u, ad)
 	}

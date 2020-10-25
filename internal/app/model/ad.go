@@ -1,6 +1,8 @@
 package model
 
 import (
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"regexp"
 	"strconv"
 )
@@ -11,7 +13,11 @@ type Ad struct {
 	Price int
 }
 
-func (ad *Ad) ParsePrice(url string) int {
+func (a *Ad) Validate() error {
+	return validation.ValidateStruct(a, validation.Field(&a.Link, validation.Required, is.URL))
+}
+
+func (a *Ad) ParsePrice(url string) int {
 	//if strings.Contains(url, "www.") {
 	//	url = strings.Replace(url, "www.", "m.", -1)
 	//}
@@ -32,7 +38,7 @@ func (ad *Ad) ParsePrice(url string) int {
 	return 123
 }
 
-func intFromTag(tag string) (int, error) {
+func IntFromTag(tag string) (int, error) {
 	re := regexp.MustCompile(`\d+`)
 	nn := re.FindAllString(tag, -1)
 	var str string

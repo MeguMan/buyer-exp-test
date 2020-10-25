@@ -1,10 +1,9 @@
 package postgres_store
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
-	"github.com/MeguMan/buyer-exp-test/internal/app/store"
 	"log"
 )
 
@@ -13,9 +12,12 @@ type AdRepository struct {
 }
 
 func (r *AdRepository) Create(a *model.Ad) (int, error) {
-	//VALIDATE HERE
-	if existing, err := r.FindByLink(a.Link); existing != nil {
-		return existing.ID, err
+	if err := a.Validate(); err != nil {
+		return 0, err
+	}
+
+	if exists, err := r.FindByLink(a.Link); exists != nil {
+		return exists.ID, err
 	}
 
 	var id int
@@ -35,9 +37,6 @@ func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
 		&a.Link,
 		&a.Price,
 	); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.ErrRecordNotFound
-		}
 		return nil, err
 	}
 
@@ -47,7 +46,7 @@ func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
 func (r *AdRepository) CheckPrice() {
 	rows, err := r.store.db.Query("SELECT * FROM ads")
 	if err != nil {
-		panic(err)
+		log.Print(err)
 	}
 	defer rows.Close()
 	var aa []model.Ad
@@ -67,15 +66,17 @@ func (r *AdRepository) CheckPrice() {
 
 		if a.Price != newPrice {
 			a.Price = newPrice
-			r.UpdatePrices(&a)
+			if err = r.UpdatePrices(&a); err != nil {
+				log.Print(err)
+			}
 		}
 	}
 }
 
-func (r *AdRepository) UpdatePrices(a *model.Ad) {
+func (r *AdRepository) UpdatePrices(a *model.Ad) error {
 	_, err := r.store.db.Exec("UPDATE ads SET price = $1 WHERE link = $2", a.Price, a.Link)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Printf("У объявления по ссылку %s обновилась цена, теперь она равна %d \n", a.Link, a.Price)
 
@@ -84,21 +85,23 @@ func (r *AdRepository) UpdatePrices(a *model.Ad) {
 		a.ID,
 	)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		u := model.User{}
+		u := &model.User{}
 		err := rows.Scan(&u.Email)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
-		fmt.Println(u)
-		//err = u.SendEmail(a)
-		//if err != nil {
-		//	log.Println(err)
-		//}
+
+		err = emailsender.New().SendEmail(u, a)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }

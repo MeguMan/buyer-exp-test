@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"database/sql"
+	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/store/postgres_store"
 	"net/http"
 )
@@ -11,11 +12,10 @@ func Start(databaseURL string) error {
 	if err != nil {
 		return err
 	}
-
 	defer db.Close()
 	s := postgres_store.New(db)
-	server := NewServer(s)
-
+	es := emailsender.New()
+	server := NewServer(s, *es)
 	return http.ListenAndServe(":8080", server)
 }
 

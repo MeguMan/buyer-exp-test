@@ -1,9 +1,7 @@
 package postgres_store
 
 import (
-	"database/sql"
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
-	"github.com/MeguMan/buyer-exp-test/internal/app/store"
 )
 
 type UserRepository struct {
@@ -11,9 +9,12 @@ type UserRepository struct {
 }
 
 func (r *UserRepository) Create(u *model.User) (int, error) {
-	//Need to validate
-	if existing, err := r.FindByEmail(u.Email); existing != nil {
-		return existing.ID, err
+	if err := u.Validate(); err != nil {
+		return 0, err
+	}
+
+	if exists, err := r.FindByEmail(u.Email); exists != nil {
+		return exists.ID, err
 	}
 
 	var id int
@@ -28,10 +29,6 @@ func (r *UserRepository) FindByEmail(email string) (*model.User, error) {
 		"SELECT * FROM users WHERE email = $1",
 		email,
 	).Scan(&u.ID, &u.Email); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, store.ErrRecordNotFound
-		}
-
 		return nil, err
 	}
 

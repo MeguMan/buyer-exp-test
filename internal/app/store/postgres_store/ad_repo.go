@@ -22,7 +22,6 @@ func (r *AdRepository) Create(a *model.Ad) (int, error) {
 	a.Price = a.ParsePrice(a.Link)
 	err := r.store.db.QueryRow("INSERT INTO ads (link, price) VALUES ($1, $2) returning ad_id",
 		a.Link, a.Price).Scan(&id)
-	fmt.Println(id)
 	return id, err
 }
 
@@ -97,9 +96,9 @@ func (r *AdRepository) UpdatePrices(a *model.Ad) {
 			continue
 		}
 		fmt.Println(u)
-		err = u.SendEmail(a)
-		if err != nil {
-			log.Println(err)
-		}
+		//err = u.SendEmail(a)
+		//if err != nil {
+		//	log.Println(err)
+		//}
 	}
 }

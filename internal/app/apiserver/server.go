@@ -33,7 +33,7 @@ func NewServer(store store.Store) *server {
 	s.configureRouter()
 
 	c := cron.New()
-	c.AddFunc("* * * * * *", s.store.Ad().CheckPrice)
+	c.AddFunc("@hourly", s.store.Ad().CheckPrice)
 	c.Start()
 	return s
 }

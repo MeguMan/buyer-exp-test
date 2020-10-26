@@ -11,20 +11,20 @@ type AdRepository struct {
 	store *Store
 }
 
-func (r *AdRepository) Create(a *model.Ad) (int, error) {
+func (r *AdRepository) Create(a *model.Ad) error {
 	if err := a.Validate(); err != nil {
-		return 0, err
+		return err
 	}
 
 	if exists, err := r.FindByLink(a.Link); exists != nil {
-		return exists.ID, err
+		return err
 	}
-
-	var id int
+	fmt.Println("Ad was added to DB: ", a)
 	a.Price = a.ParsePrice(a.Link)
 	err := r.store.db.QueryRow("INSERT INTO ads (link, price) VALUES ($1, $2) returning ad_id",
-		a.Link, a.Price).Scan(&id)
-	return id, err
+		a.Link, a.Price).Scan(&a.ID)
+
+	return err
 }
 
 func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {

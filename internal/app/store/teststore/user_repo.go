@@ -9,12 +9,12 @@ type UserRepository struct {
 	users map[int]*model.User
 }
 
-func (r *UserRepository) Create(u *model.User) (int, error) {
+func (r *UserRepository) Create(u *model.User) error {
 	if err := u.Validate(); err != nil {
-		return 0, err
+		return err
 	}
 
-	return u.ID, nil
+	return nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {

@@ -2,12 +2,14 @@ package apiserver
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/store/postgres_store"
 	"net/http"
 )
 
 func Start(databaseURL string) error {
+	fmt.Print(databaseURL)
 	db, err := newDB(databaseURL)
 	if err != nil {
 		return err

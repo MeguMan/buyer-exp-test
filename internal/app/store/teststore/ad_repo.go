@@ -21,9 +21,10 @@ func (r *AdRepository) UpdatePrices(a *model.Ad) error {
 	panic("implement me")
 }
 
-func (r *AdRepository) Create(a *model.Ad) (int, error) {
+func (r *AdRepository) Create(a *model.Ad) error {
 	if err := a.Validate(); err != nil {
-		return 0, err
+		return err
 	}
-	return a.ID, nil
+
+	return nil
 }

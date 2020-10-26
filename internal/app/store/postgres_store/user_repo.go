@@ -8,19 +8,19 @@ type UserRepository struct {
 	store *Store
 }
 
-func (r *UserRepository) Create(u *model.User) (int, error) {
+func (r *UserRepository) Create(u *model.User) error {
 	if err := u.Validate(); err != nil {
-		return 0, err
+		return err
 	}
 
 	if exists, err := r.FindByEmail(u.Email); exists != nil {
-		return exists.ID, err
+		return err
 	}
 
-	var id int
 	err := r.store.db.QueryRow("INSERT INTO users (email) VALUES ($1) returning user_id",
-		u.Email).Scan(&id)
-	return id, err
+		u.Email).Scan(&u.ID)
+
+	return err
 }
 
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {

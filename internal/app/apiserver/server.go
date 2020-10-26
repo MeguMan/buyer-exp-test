@@ -34,7 +34,7 @@ func NewServer(store store.Store, emailSender emailsender.Sender) *server {
 		es:     emailSender,
 	}
 	s.configureRouter()
-
+	fmt.Print("I AM STILL WORKING")
 	c := cron.New()
 	c.AddFunc("@hourly", s.store.Ad().CheckPrice)
 	c.Start()
@@ -65,13 +65,13 @@ func (s *server) Follow() func(w http.ResponseWriter, r *http.Request) {
 		adr := s.store.Ad()
 		userAd := s.store.UserAd()
 
-		u.ID, err = ur.Create(&u)
+		err = ur.Create(&u)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Print(err)
 			return
 		}
-		a.ID, err = adr.Create(&a)
+		err = adr.Create(&a)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Print(err)

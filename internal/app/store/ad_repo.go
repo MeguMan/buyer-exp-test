@@ -5,7 +5,7 @@ import (
 )
 
 type AdRepository interface {
-	Create(ad *model.Ad) (int, error)
+	Create(ad *model.Ad) error
 	FindByLink(string) (*model.Ad, error)
 	CheckPrice()
 	UpdatePrices(a *model.Ad) error

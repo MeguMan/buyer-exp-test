@@ -5,14 +5,13 @@ type UserAdRepository struct {
 }
 
 func (r *UserAdRepository) Create(userId, adId int) error {
-	//Need to validate
-	var existing int
+	var exists int
 	err := r.store.db.QueryRow(
 		"SELECT user_id FROM users_ads WHERE user_id = $1 AND ad_id = $2",
 		userId, adId,
-	).Scan(&existing)
+	).Scan(&exists)
 
-	if existing != 0 {
+	if exists != 0 {
 		return nil
 	}
 

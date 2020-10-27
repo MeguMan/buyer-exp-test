@@ -7,6 +7,7 @@ import (
 )
 
 func TestSender_SendEmail(t *testing.T) {
+
 	testCases := []struct {
 		name    string
 		s       func() *Sender
@@ -17,7 +18,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "valid",
 			s: func() *Sender {
-				return New()
+				return TestSender(t)
 			},
 			a:       model.TestAd(t),
 			u:       model.TestUser(t),
@@ -26,7 +27,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "incorrect email",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.Email = "incorrectEmail"
 				return s
 			},
@@ -37,7 +38,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "incorrect password",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.Password = "incorrectPassword"
 				return s
 			},
@@ -48,7 +49,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "incorrect TLS port",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.TLSPort = "incorrectTLS"
 				return s
 			},
@@ -59,7 +60,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "empty email",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.Email = ""
 				return s
 			},
@@ -70,7 +71,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "empty password",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.Password = ""
 				return s
 			},
@@ -81,7 +82,7 @@ func TestSender_SendEmail(t *testing.T) {
 		{
 			name: "empty TLS port",
 			s: func() *Sender {
-				s := New()
+				s := TestSender(t)
 				s.TLSPort = ""
 				return s
 			},

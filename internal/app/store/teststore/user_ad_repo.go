@@ -1,8 +1,7 @@
 package teststore
 
 type UserAdRepository struct {
-	store    *Store
-	usersAds map[int]int
+	store *Store
 }
 
 func (r *UserAdRepository) Create(userId, adId int) error {

@@ -1,2 +1,5 @@
 .idea
 apiserver.exe
+.migrations
+.Makefile
+.data

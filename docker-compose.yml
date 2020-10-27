@@ -6,27 +6,26 @@ services:
     restart: always
     ports:
       - 5432:5432
-    environment:
-      POSTGRES_PASSWORD: docker
-      POSTGRES_USER: docker
-      POSTGRES_DB: avito_test_db
     volumes:
-      - database_data:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: secret
 
-  api:
+  backend:
+    container_name: backend
     build: .
+    restart: always
     expose:
       - 8080
     ports:
       - 8080:8080
-    volumes:
-      - ./api:/usr/src/app/
     links:
       - db
+    depends_on:
+      - db
     environment:
-      DATABASE_URL: host=db port=5432 user=docker password=docker dbname=avito_test_db sslmode=disable
-
-
-volumes:
-  database_data:
-    driver: local
+      DATABASE_URL: host=db port=5432 user=postgres password=secret dbname=postgres sslmode=disable
+      EMAIL: buyerexptest@gmail.com
+      PASSWORD: 135798642qq
+      TLSPORT: 587

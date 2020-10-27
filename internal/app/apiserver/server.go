@@ -34,9 +34,8 @@ func NewServer(store store.Store, emailSender emailsender.Sender) *server {
 		es:     emailSender,
 	}
 	s.configureRouter()
-	fmt.Print("I AM STILL WORKING")
 	c := cron.New()
-	c.AddFunc("@hourly", s.store.Ad().CheckPrice)
+	c.AddFunc("* * * * * *", s.store.Ad().CheckPrice)
 	c.Start()
 	return s
 }
@@ -61,25 +60,33 @@ func (s *server) Follow() func(w http.ResponseWriter, r *http.Request) {
 		u.Email = d.Email
 		a.Link = d.Link
 
+		if err := u.Validate(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			log.Println(err)
+			return
+		}
+		if err := a.Validate(); err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		ur := s.store.User()
 		adr := s.store.Ad()
 		userAd := s.store.UserAd()
 
-		err = ur.Create(&u)
+		_, err = ur.Create(&u)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Print(err)
 			return
 		}
-		err = adr.Create(&a)
+		_, err = adr.Create(&a)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Print(err)
 			return
 		}
 		err = userAd.Create(u.ID, a.ID)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
 			log.Print(err)
 			return
 		}
@@ -88,6 +95,7 @@ func (s *server) Follow() func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Print(err)
 		}
+
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprint(w, u, a)
 	}

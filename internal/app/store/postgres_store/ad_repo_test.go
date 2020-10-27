@@ -2,6 +2,7 @@ package postgres_store_test
 
 import (
 	"database/sql"
+	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
 	"github.com/MeguMan/buyer-exp-test/internal/app/store/postgres_store"
 	"github.com/stretchr/testify/assert"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestAdRepository_Create(t *testing.T) {
-	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
+	db, teardown := postgres_store.TestDB(t, databaseURL)
 	defer teardown("ads")
 	s := postgres_store.New(db)
 	a := model.TestAd(t)
@@ -19,7 +20,7 @@ func TestAdRepository_Create(t *testing.T) {
 }
 
 func TestAdRepository_FindByLink(t *testing.T) {
-	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
+	db, teardown := postgres_store.TestDB(t, databaseURL)
 	defer teardown("ads")
 
 	s := postgres_store.New(db)
@@ -38,11 +39,12 @@ func TestAdRepository_CheckPrice(t *testing.T) {
 }
 
 func TestAdRepository_UpdatePrices(t *testing.T) {
-	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
+	db, teardown := postgres_store.TestDB(t, databaseURL)
 	defer teardown("ads")
 
 	a := model.TestAd(t)
 	s := postgres_store.New(db)
-	err := s.Ad().UpdatePrices(a)
+	sender := emailsender.TestSender(t)
+	err := s.Ad().UpdatePrices(a, sender)
 	assert.NoError(t, err)
 }

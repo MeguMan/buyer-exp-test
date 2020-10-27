@@ -1,5 +1,7 @@
 package postgres_store
 
+import "fmt"
+
 type UserAdRepository struct {
 	store *Store
 }
@@ -10,8 +12,8 @@ func (r *UserAdRepository) Create(userId, adId int) error {
 		"SELECT user_id FROM users_ads WHERE user_id = $1 AND ad_id = $2",
 		userId, adId,
 	).Scan(&exists)
-
 	if exists != 0 {
+		fmt.Println("Подписка на это объявление уже оформлена")
 		return nil
 	}
 

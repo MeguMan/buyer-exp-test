@@ -9,7 +9,7 @@ import (
 )
 
 func TestUserRepository_Create(t *testing.T) {
-	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
+	db, teardown := postgres_store.TestDB(t, databaseURL)
 	defer teardown("users")
 	s := postgres_store.New(db)
 	u := model.TestUser(t)
@@ -19,14 +19,12 @@ func TestUserRepository_Create(t *testing.T) {
 }
 
 func TestUserRepository_FindByEmail(t *testing.T) {
-	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
+	db, teardown := postgres_store.TestDB(t, databaseURL)
 	defer teardown("users")
-
 	s := postgres_store.New(db)
 	u1 := model.TestUser(t)
 	_, err := s.User().FindByEmail(u1.Email)
 	assert.EqualError(t, err, sql.ErrNoRows.Error())
-
 	s.User().Create(u1)
 	u2, err := s.User().FindByEmail(u1.Email)
 	assert.NoError(t, err)

@@ -5,26 +5,22 @@ import (
 	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
 	"log"
+	"os"
 )
 
 type AdRepository struct {
 	store *Store
 }
 
-func (r *AdRepository) Create(a *model.Ad) error {
-	if err := a.Validate(); err != nil {
-		return err
+func (r *AdRepository) Create(a *model.Ad) (model.Ad, error) {
+	if a, err := r.FindByLink(a.Link); a != nil {
+		return *a, err
 	}
-
-	if exists, err := r.FindByLink(a.Link); exists != nil {
-		return err
-	}
-	fmt.Println("Ad was added to DB: ", a)
 	a.Price = a.ParsePrice(a.Link)
 	err := r.store.db.QueryRow("INSERT INTO ads (link, price) VALUES ($1, $2) returning ad_id",
 		a.Link, a.Price).Scan(&a.ID)
 
-	return err
+	return *a, err
 }
 
 func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
@@ -44,6 +40,12 @@ func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
 }
 
 func (r *AdRepository) CheckPrice() {
+	s := emailsender.Sender{
+		Email:    os.Getenv("EMAIL"),
+		Password: os.Getenv("PASSWORD"),
+		TLSPort:  os.Getenv("TLSPORT"),
+	}
+
 	rows, err := r.store.db.Query("SELECT * FROM ads")
 	if err != nil {
 		log.Print(err)
@@ -66,14 +68,14 @@ func (r *AdRepository) CheckPrice() {
 
 		if a.Price != newPrice {
 			a.Price = newPrice
-			if err = r.UpdatePrices(&a); err != nil {
+			if err = r.UpdatePrices(&a, &s); err != nil {
 				log.Print(err)
 			}
 		}
 	}
 }
 
-func (r *AdRepository) UpdatePrices(a *model.Ad) error {
+func (r *AdRepository) UpdatePrices(a *model.Ad, s *emailsender.Sender) error {
 	_, err := r.store.db.Exec("UPDATE ads SET price = $1 WHERE link = $2", a.Price, a.Link)
 	if err != nil {
 		return err
@@ -97,7 +99,7 @@ func (r *AdRepository) UpdatePrices(a *model.Ad) error {
 			continue
 		}
 
-		err = emailsender.New().SendEmail(u, a)
+		err = emailsender.New(s).SendEmail(u, a)
 		if err != nil {
 			return err
 		}

@@ -3,7 +3,6 @@ package emailsender
 import (
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
 	"net/smtp"
-	"os"
 	"strconv"
 )
 
@@ -13,11 +12,11 @@ type Sender struct {
 	TLSPort  string
 }
 
-func New() *Sender {
+func New(s *Sender) *Sender {
 	return &Sender{
-		Email:    os.Getenv("EMAIL"),
-		Password: os.Getenv("PASSWORD"),
-		TLSPort:  os.Getenv("TLSPORT"),
+		Email:    s.Email,
+		Password: s.Password,
+		TLSPort:  s.TLSPort,
 	}
 }
 

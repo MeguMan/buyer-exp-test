@@ -33,10 +33,6 @@ func TestAdRepository_FindByLink(t *testing.T) {
 	assert.NotNil(t, a2)
 }
 
-func TestAdRepository_CheckPrice(t *testing.T) {
-	//
-}
-
 func TestAdRepository_UpdatePrices(t *testing.T) {
 	db, teardown := postgres_store.TestDB(t, "user=postgres password=12345 dbname=buyer_exp sslmode=disable")
 	defer teardown("ads")

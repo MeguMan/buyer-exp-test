@@ -54,7 +54,7 @@ func TestAd_Validate(t *testing.T) {
 }
 
 func TestAd_ParsePrice(t *testing.T) {
-	file, err := ioutil.ReadFile("../../../avito_page.html")
+	file, err := ioutil.ReadFile("avito_page.html")
 	if err != nil {
 		log.Println(err)
 	}

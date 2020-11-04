@@ -33,6 +33,7 @@ func NewServer(store store.Store, emailSender emailsender.Sender) *server {
 		store:  store,
 		es:     emailSender,
 	}
+
 	s.configureRouter()
 	c := cron.New()
 	c.AddFunc("* * * * * *", s.store.Ad().CheckPrice)

@@ -1,30 +1,27 @@
 package postgres_store
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
 	"github.com/MeguMan/buyer-exp-test/internal/app/model"
 	"log"
+	"os"
 )
 
 type AdRepository struct {
 	store *Store
 }
 
-func (r *AdRepository) Create(a *model.Ad) (int, error) {
-	if err := a.Validate(); err != nil {
-		return 0, err
+func (r *AdRepository) Create(a *model.Ad) (model.Ad, error) {
+	if a, err := r.FindByLink(a.Link); a != nil {
+		return *a, err
 	}
-
-	if exists, err := r.FindByLink(a.Link); exists != nil {
-		return exists.ID, err
-	}
-
-	var id int
 	a.Price = a.ParsePrice(a.Link)
 	err := r.store.db.QueryRow("INSERT INTO ads (link, price) VALUES ($1, $2) returning ad_id",
-		a.Link, a.Price).Scan(&id)
-	return id, err
+		a.Link, a.Price).Scan(&a.ID)
+
+	return *a, err
 }
 
 func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
@@ -44,6 +41,16 @@ func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
 }
 
 func (r *AdRepository) CheckPrice() {
+	emailConfig := emailsender.NewConfig()
+	configFile, err := os.Open("configs/db.json")
+	if err != nil {
+		log.Print(err.Error())
+	}
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&emailConfig); err != nil {
+		log.Print(err.Error())
+	}
+
 	rows, err := r.store.db.Query("SELECT * FROM ads")
 	if err != nil {
 		log.Print(err)
@@ -66,14 +73,14 @@ func (r *AdRepository) CheckPrice() {
 
 		if a.Price != newPrice {
 			a.Price = newPrice
-			if err = r.UpdatePrices(&a); err != nil {
+			if err = r.UpdatePrices(&a, emailConfig); err != nil {
 				log.Print(err)
 			}
 		}
 	}
 }
 
-func (r *AdRepository) UpdatePrices(a *model.Ad) error {
+func (r *AdRepository) UpdatePrices(a *model.Ad, emailConfig *emailsender.Config) error {
 	_, err := r.store.db.Exec("UPDATE ads SET price = $1 WHERE link = $2", a.Price, a.Link)
 	if err != nil {
 		return err
@@ -97,7 +104,7 @@ func (r *AdRepository) UpdatePrices(a *model.Ad) error {
 			continue
 		}
 
-		err = emailsender.New().SendEmail(u, a)
+		err = emailsender.New(emailConfig).SendEmail(u, a)
 		if err != nil {
 			return err
 		}

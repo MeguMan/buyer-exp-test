@@ -12,7 +12,7 @@ type Sender struct {
 	TLSPort  string
 }
 
-func New(s *Sender) *Sender {
+func New(s *Config) *Sender {
 	return &Sender{
 		Email:    s.Email,
 		Password: s.Password,

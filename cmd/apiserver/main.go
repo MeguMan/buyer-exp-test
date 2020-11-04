@@ -1,30 +1,33 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/MeguMan/buyer-exp-test/internal/app/apiserver"
 	"github.com/MeguMan/buyer-exp-test/internal/app/emailsender"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
+func main() {
+	dbConfig := apiserver.NewConfig()
+	emailConfig := emailsender.NewConfig()
+	ParseJsonToConfig(dbConfig, "db.json")
+	ParseJsonToConfig(emailConfig, "email.json")
+
+	if err := apiserver.Start(dbConfig, emailConfig); err != nil {
+		log.Fatal(err)
 	}
 }
 
-func main() {
-	databaseURL, exists := os.LookupEnv("DATABASE_URL")
-	sender := emailsender.Sender{
-		Email:    os.Getenv("EMAIL"),
-		Password: os.Getenv("PASSWORD"),
-		TLSPort:  os.Getenv("TLSPORT"),
+func ParseJsonToConfig(i interface{}, configName string) interface{} {
+	configFile, err := os.Open("configs/" + configName)
+	if err != nil {
+		log.Print(err.Error())
+	}
+	jsonParser := json.NewDecoder(configFile)
+	if err = jsonParser.Decode(&i); err != nil {
+		log.Print(err.Error())
 	}
 
-	if exists {
-		if err := apiserver.Start(databaseURL, &sender); err != nil {
-			log.Fatal(err)
-		}
-	}
+	return i
 }

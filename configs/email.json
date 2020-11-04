@@ -1,1 +1,5 @@
-package configs
+{
+  "email": "buyerexptest@gmail.com",
+  "password": "135798642qq",
+  "tls_port": "587"
+}

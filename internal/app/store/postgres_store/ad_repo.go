@@ -46,7 +46,7 @@ func (r *AdRepository) FindByLink(link string) (*model.Ad, error) {
 func (r *AdRepository) CheckPrice() {
 	rows, err := r.store.db.Query("SELECT * FROM ads")
 	if err != nil {
-		panic(err)
+		log.Print(err)
 	}
 	defer rows.Close()
 	var aa []model.Ad
@@ -67,7 +67,7 @@ func (r *AdRepository) CheckPrice() {
 		if a.Price != newPrice {
 			a.Price = newPrice
 			if err = r.UpdatePrices(&a); err != nil {
-				panic(err)
+				log.Print(err)
 			}
 		}
 	}

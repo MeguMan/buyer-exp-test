@@ -6,15 +6,10 @@ import (
 
 type UserRepository struct {
 	store *Store
-	users map[int]*model.User
 }
 
-func (r *UserRepository) Create(u *model.User) (int, error) {
-	if err := u.Validate(); err != nil {
-		return 0, err
-	}
-
-	return u.ID, nil
+func (r *UserRepository) Create(u *model.User) (model.User, error) {
+	return *u, nil
 }
 
 func (r *UserRepository) FindByEmail(email string) (*model.User, error) {

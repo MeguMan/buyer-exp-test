@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_PASSWORD: secret
+
+  backend:
+    container_name: backend
+    build: .
+    restart: always
+    expose:
+      - 8080
+    ports:
+      - 8080:8080
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: host=db port=5432 user=postgres password=secret dbname=postgres sslmode=disable
+      EMAIL: buyerexptest@gmail.com
+      PASSWORD: 135798642qq
+      TLSPORT: 587

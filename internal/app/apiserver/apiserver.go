@@ -7,14 +7,14 @@ import (
 	"net/http"
 )
 
-func Start(databaseURL string) error {
+func Start(databaseURL string, sender *emailsender.Sender) error {
 	db, err := newDB(databaseURL)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 	s := postgres_store.New(db)
-	es := emailsender.New()
+	es := emailsender.New(sender)
 	server := NewServer(s, *es)
 	return http.ListenAndServe(":8080", server)
 }
